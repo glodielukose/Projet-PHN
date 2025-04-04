@@ -44,4 +44,14 @@ public class Contact {
     public void setGenre(String genre) {
         Genre = genre;
     }
+
+    @Override
+    public String toString() {
+        return "Contact{" +
+                "Nom='" + Nom + '\'' +
+                ", NumTel='" + NumTel + '\'' +
+                ", Id='" + Id + '\'' +
+                ", Genre='" + Genre + '\'' +
+                '}';
+    }
 }
