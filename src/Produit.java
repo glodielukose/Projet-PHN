@@ -42,4 +42,11 @@ public class Produit {
     public void setDateExpiration(String dateExpiration) {
         this.dateExpiration = dateExpiration;
     }
+
+    public void afficherProduit() {
+        System.out.println("ID Produit: " + idProduit);
+        System.out.println("Quantité: " + Qte);
+        System.out.println("Marque: " + marque);
+        System.out.println("Date d'Expiration: " + dateExpiration);
+    }
 }

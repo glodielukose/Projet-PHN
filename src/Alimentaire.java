@@ -1,9 +1,11 @@
+import java.util.List;
+
 public class Alimentaire extends Produit{
     private String ValuerNutritionnelle;
-    private String[] Ingredients;
+    private List<String> Ingredients;
     private String Certification;
 
-    public Alimentaire(String idProduit, int qte, String marque, String dateExpiration, String valuerNutritionnelle, String[] ingredients, String certification) {
+    public Alimentaire(String idProduit, int qte, String marque, String dateExpiration, String valuerNutritionnelle, List<String> ingredients, String certification) {
         super(idProduit, qte, marque, dateExpiration);
         ValuerNutritionnelle = valuerNutritionnelle;
         Ingredients = ingredients;
@@ -18,11 +20,11 @@ public class Alimentaire extends Produit{
         ValuerNutritionnelle = valuerNutritionnelle;
     }
 
-    public String[] getIngredients() {
+    public List<String> getIngredients() {
         return Ingredients;
     }
 
-    public void setIngredients(String[] ingredients) {
+    public void setIngredients(List<String> ingredients) {
         Ingredients = ingredients;
     }
 

@@ -34,7 +34,7 @@ public class Utilisateur {
                 '}';
     }
     public  void seConnecter(){
-        System.out.println("Entrez votre mot de passe pour vous connecter");
+        System.out.print("Entrez votre mot de passe pour vous connecter : ");
         String  password;
         Scanner sc = new Scanner(System.in);
         do {
