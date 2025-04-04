@@ -120,6 +120,50 @@ public class Main {
                                             "\n2. Modifier produitMenager" +
                                             "\n3. Modifier produitAlimentation"
                                     );
+                                    option = sc.nextInt();
+                                    switch (option){
+                                        case 1:
+                                            System.out.println("Entrez l'id du produit à modifier");
+                                            String idProduit = sc.nextLine();
+                                            for (int i = 0; i < cosmetiques.size(); i++) {
+                                                if (cosmetiques.get(i).getIdProduit().equals(idProduit)){
+                                                    System.out.println("Entrez la nouvelle marque");
+                                                    String marque = sc.nextLine();
+                                                    cosmetiques.get(i).setMarque(marque);
+                                                    System.out.println("Entrez la nouvelle date d'expiration");
+                                                    String dateExpiration = sc.nextLine();
+                                                    cosmetiques.get(i).setDateExpiration(dateExpiration);
+                                                }
+                                            }
+                                            break;
+                                        case 2:
+                                            System.out.println("Entrez l'id du produit à modifier");
+                                            String idProduitMenager = sc.nextLine();
+                                            for (int i = 0; i < menagers.size(); i++) {
+                                                if (menagers.get(i).getIdProduit().equals(idProduitMenager)){
+                                                    System.out.println("Entrez la nouvelle marque");
+                                                    String marque = sc.nextLine();
+                                                    menagers.get(i).setMarque(marque);
+                                                    System.out.println("Entrez la nouvelle date d'expiration");
+                                                    String dateExpiration = sc.nextLine();
+                                                    menagers.get(i).setDateExpiration(dateExpiration);
+                                                }
+                                            }
+                                            break;
+                                        case 3:
+                                            System.out.println("Entrez l'id du produit à modifier");
+                                            String idProduitAlimentaire = sc.nextLine();
+                                            for (int i = 0; i < alimentaires.size(); i++) {
+                                                if (alimentaires.get(i).getIdProduit().equals(idProduitAlimentaire)){
+                                                    System.out.println("Entrez la nouvelle marque");
+                                                    String marque = sc.nextLine();
+                                                    alimentaires.get(i).setMarque(marque);
+                                                    System.out.println("Entrez la nouvelle date d'expiration");
+                                                    String dateExpiration = sc.nextLine();
+                                                    alimentaires.get(i).setDateExpiration(dateExpiration);
+                                                }
+                                            }
+                                    }
                                     break;
                                 case 4:
                                     System.out.println("1. Afficher produit Cosmetique" +
@@ -205,7 +249,21 @@ public class Main {
                     option = sc.nextInt();
                     switch (option){
                         case 1 :
-                            System.out.println("Saississez l'id du produit");
+                            System.out.println("Entrez l'id du produit à commander");
+                            String idProduit = sc.nextLine();
+                            for (int i = 0; i < cosmetiques.size(); i++) {
+                                if (cosmetiques.get(i).getIdProduit().equals(idProduit)){
+                                    System.out.println("Entrez la quantite");
+                                    int qte = sc.nextInt();
+                                    if (qte <= cosmetiques.get(i).getQte()){
+                                        System.out.println("Commande passée avec succès");
+                                        cosmetiques.get(i).setQte(cosmetiques.get(i).getQte() - qte);
+                                    }
+                                    else {
+                                        System.out.println("Quantité insuffisante");
+                                    }
+                                }
+                            }
 
                     }
 
