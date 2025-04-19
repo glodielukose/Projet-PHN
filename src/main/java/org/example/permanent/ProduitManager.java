@@ -1,100 +1,145 @@
 package org.example.permanent;
-import com.google.gson.*;
-import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
-import org.example.produit.Alimentaire;
-import org.example.produit.Cosmetique;
-import org.example.produit.Menager;
-import org.example.produit.Produit;
 
-import java.io.*;
-import java.util.*;
+import org.example.produit.*;
+import org.example.database.DatabaseManager;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class ProduitManager {
-    private static final String FILE_PATH = "produits.json";
-    private final Gson gson;
-    Scanner sc = new Scanner(System.in);
+    public void ajouterProduit(Produit produit) {
+        String sql = "INSERT INTO produits(id, type, nom, prix, quantite, details) VALUES(?,?,?,?,?,?)";
 
-    public ProduitManager() {
-        RuntimeTypeAdapterFactory<Produit> typeFactory = RuntimeTypeAdapterFactory
-                .of(Produit.class, "type")
-                .registerSubtype(Cosmetique.class, "cosmetique")
-                .registerSubtype(Alimentaire.class, "alimentaire")
-                .registerSubtype(Menager.class, "menager");
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        this.gson = new GsonBuilder()
-                .registerTypeAdapterFactory(typeFactory)
-                .setPrettyPrinting()
-                .create();
-    }
+            pstmt.setString(1, produit.getIdProduit());
+            pstmt.setString(2, getProductType(produit));
+            pstmt.setString(3, produit.getNomProduit());
+            pstmt.setDouble(4, produit.getPrix());
+            pstmt.setInt(5, produit.getQte());
+            pstmt.setString(6, getProductDetails(produit));
 
-    public List<Produit> chargerProduits() {
-        try (Reader reader = new FileReader(FILE_PATH)) {
-            Produit[] produitsArray = gson.fromJson(reader, Produit[].class);
-            return produitsArray != null ? new ArrayList<>(Arrays.asList(produitsArray)) : new ArrayList<>();
-        } catch (IOException e) {
-            return new ArrayList<>();
-        }
-    }
-
-    public void sauvegarderProduits(List<Produit> produits) {
-        try (Writer writer = new FileWriter(FILE_PATH)) {
-            gson.toJson(produits, writer);
-        } catch (IOException e) {
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public void ajouterProduit(Produit produit) {
-        List<Produit> produits = chargerProduits();
-        produits.add(produit);
-        sauvegarderProduits(produits);
-    }
+    public List<Produit> chargerProduits() {
+        List<Produit> produits = new ArrayList<>();
+        String sql = "SELECT * FROM produits";
 
-    public boolean modifierProduit(Produit nouveauProduit) {
-        System.out.println("Veillez entrer l'id du produit");
-        String id = sc.nextLine();
-        List<Produit> produits = chargerProduits();
+        try (Connection conn = DatabaseManager.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
 
-        for (int i = 0; i < produits.size(); i++) {
-            if (produits.get(i).getIdProduit().equals(id)) { // suppose que Produit a une méthode getId()
-                produits.set(i, nouveauProduit);
-                sauvegarderProduits(produits);
-                return true;
+            while (rs.next()) {
+                Produit produit = createProductFromResultSet(rs);
+                if (produit != null) {
+                    produits.add(produit);
+                }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-
-        return false;
+        return produits;
     }
 
-    public boolean supprimerProduit() {
-        System.out.println("Veillez entrer l'id du prosuit");
-        String index = sc.nextLine();
-
+    public boolean modifierProduit(int index, Produit nouveauProduit) {
         List<Produit> produits = chargerProduits();
-        for(int i = 0; i < produits.size(); i++) {
-            if (produits.get(i).getIdProduit().equals(index)) { // suppose que Produit a une méthode getId()
-                produits.remove(i);
-                sauvegarderProduits(produits);
-                return true;
-            }
+        if (index < 0 || index >= produits.size()) {
+            return false;
         }
-        return false;
+
+        String id = produits.get(index).getIdProduit();
+        String sql = "UPDATE produits SET type=?, nom=?, prix=?, quantite=?, details=? WHERE id=?";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, getProductType(nouveauProduit));
+            pstmt.setString(2, nouveauProduit.getNomProduit());
+            pstmt.setDouble(3, nouveauProduit.getPrix());
+            pstmt.setInt(4, nouveauProduit.getQte());
+            pstmt.setString(5, getProductDetails(nouveauProduit));
+            pstmt.setString(6, id);
+
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
-    // Méthode alternative pour supprimer par référence d'objet
-    public boolean supprimerProduit(Produit produit) {
+    public boolean supprimerProduit(int index) {
         List<Produit> produits = chargerProduits();
-        boolean removed = produits.remove(produit);
-        if (removed) {
-            sauvegarderProduits(produits);
+        if (index < 0 || index >= produits.size()) {
+            return false;
         }
-        return removed;
+
+        String sql = "DELETE FROM produits WHERE id = ?";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, produits.get(index).getIdProduit());
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
-    // Méthode pour trouver un produit par son identifiant (si vous en avez un)
-    public Optional<Produit> trouverProduitParId(String id) {
-        return chargerProduits().stream()
-                .filter(p -> p.getIdProduit().equals(id)) // suppose que Produit a une méthode getId()
-                .findFirst();
+    // Méthodes utilitaires
+    private String getProductType(Produit produit) {
+        if (produit instanceof Alimentaire) return "alimentaire";
+        if (produit instanceof Cosmetique) return "cosmetique";
+        if (produit instanceof Menager) return "menager";
+        return "autre";
+    }
+
+    private String getProductDetails(Produit produit) {
+        // Implémentez la sérialisation des détails spécifiques
+        // Par exemple avec Gson si nécessaire
+        return ""; // À adapter
+    }
+
+    private Produit createProductFromResultSet(ResultSet rs) throws SQLException {
+        String type = rs.getString("type");
+        String details = rs.getString("details");
+
+        // Implémentez la désérialisation selon le type
+        // À adapter selon votre structure
+        switch (type) {
+            case "alimentaire":
+                return new Alimentaire(
+                        rs.getString("id"),
+                        rs.getString("nom"),
+                        rs.getDouble("prix"),
+                        rs.getInt("quantite")
+                        // D'autres paramètres
+                );
+            case "cosmetique":
+                return new Cosmetique(
+                        rs.getString("id"),
+                        rs.getString("nom"),
+                        rs.getDouble("prix"),
+                        rs.getInt("quantite")
+                        // D'autres paramètres
+                );
+            case "menager":
+                return new Menager(
+                        rs.getString("id"),
+                        rs.getString("nom"),
+                        rs.getDouble("prix"),
+                        rs.getInt("quantite")
+                        // D'autres paramètres
+                );
+            default:
+                return null;
+        }
     }
 }
