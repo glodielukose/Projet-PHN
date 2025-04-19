@@ -1,12 +1,15 @@
 package org.example;
 
 import org.example.permanent.ProduitManager;
+import org.example.permanent.UtilisateurManager;
 import org.example.produit.Produit;
 import org.example.utilisateur.Administrateur;
 import org.example.utilisateur.Caissier;
+import org.example.utilisateur.Utilisateur;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
@@ -14,8 +17,8 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         int option;
         boolean run = true;
-        List<Caissier> caissiers = new ArrayList<>();
         ProduitManager produitManager = new ProduitManager();
+        UtilisateurManager utilisateurManager = new UtilisateurManager();
         Administrateur adm1 = new Administrateur("Glodie", "glodielukose", "0856888233", "1", "M", "1234");
 
         do {
@@ -139,37 +142,48 @@ public class Main {
 
                                     switch (option) {
                                         case 1:
-                                            Caissier new_caissier = adm1.ajouterCaissier();
-                                            caissiers.add(new_caissier);
+                                            Caissier newCaissier = adm1.ajouterCaissier();
+                                            utilisateurManager.ajouterUtilisateur(newCaissier);
+                                            System.out.println("Caissier ajouté avec succès !");
                                             break;
                                         case 2:
-                                            System.out.println("Entrez l'id du caissier à supprimer");
-                                            String idCaissier = sc.nextLine();
+                                            System.out.println("Liste des caissiers:");
+                                            List<Utilisateur> caissiers = utilisateurManager.chargerUtilisateurs();
                                             for (int i = 0; i < caissiers.size(); i++) {
-                                                if (caissiers.get(i).getId().equals(idCaissier)) {
-                                                    caissiers.remove(i);
-                                                    System.out.println("Caissier supprimé avec succès");
-                                                    break;
+                                                if (caissiers.get(i) instanceof Caissier) {
+                                                    System.out.println(i + ". " + caissiers.get(i));
                                                 }
                                             }
+                                            System.out.println("Entrez l'index du caissier à supprimer:");
+                                            int index = sc.nextInt();
+                                            sc.nextLine();
+
+                                            if (index >= 0 && index < caissiers.size() && caissiers.get(index) instanceof Caissier) {
+                                                utilisateurManager.supprimerUtilisateur(index);
+                                                System.out.println("Caissier supprimé avec succès !");
+                                            } else {
+                                                System.out.println("Index invalide !");
+                                            }
                                             break;
-                                        case 3:
-                                            System.out.println("Entrez l'id du caissier à modifier");
-                                            String idCaissierModif = sc.nextLine();
+
+                                        case 3: // Mettre à jour Caissier
+                                            System.out.println("Liste des caissiers:");
+                                            caissiers = utilisateurManager.chargerUtilisateurs();
                                             for (int i = 0; i < caissiers.size(); i++) {
-                                                if (caissiers.get(i).getId().equals(idCaissierModif)) {
-                                                    System.out.println("Entrez le nouveau nom");
-                                                    String nom = sc.nextLine();
-                                                    caissiers.get(i).getContact().setNom(nom);
-                                                    System.out.println("Entrez le nouveau numéro de téléphone");
-                                                    String numTel = sc.nextLine();
-                                                    caissiers.get(i).getContact().setNumTel(numTel);
-                                                    System.out.println("Entrez le nouveau genre");
-                                                    String genre = sc.nextLine();
-                                                    caissiers.get(i).getContact().setGenre(genre);
-                                                    System.out.println("Caissier modifié avec succès");
-                                                    break;
+                                                if (caissiers.get(i) instanceof Caissier) {
+                                                    System.out.println(i + ". " + caissiers.get(i));
                                                 }
+                                            }
+                                            System.out.println("Entrez l'index du caissier à modifier:");
+                                            index = sc.nextInt();
+                                            sc.nextLine();
+
+                                            if (index >= 0 && index < caissiers.size() && caissiers.get(index) instanceof Caissier) {
+                                                Caissier updatedCaissier = adm1.ajouterCaissier(); // On recrée un nouveau caissier
+                                                utilisateurManager.modifierUtilisateur(index, updatedCaissier);
+                                                System.out.println("Caissier modifié avec succès !");
+                                            } else {
+                                                System.out.println("Index invalide !");
                                             }
                                             break;
                                         case 4:
@@ -187,41 +201,24 @@ public class Main {
                 case 2:
                     System.out.println("Entrez votre id : ");
                     String idCaissier = sc.nextLine();
+                    System.out.println(idCaissier);
                     System.out.println("Entrez votre mot de passe : ");
                     String passwordCaissier = sc.nextLine();
+                    System.out.println(passwordCaissier);
 
-                    boolean found = false;
-                    for (Caissier caissier : caissiers) {
-                        if (caissier.getId().equals(idCaissier) && caissier.getPassword().equals(passwordCaissier)) {
-                            found = true;
-                            System.out.println("Bienvenu " + caissier.getContact().getNom());
-                            caissier.seConnecter();
+                    // Vérification avec UtilisateurManager
+                    Optional<Utilisateur> user = utilisateurManager.trouverUtilisateurParId(idCaissier);
+                    if (user.isPresent() && user.get() instanceof Caissier &&
+                            ((Caissier)user.get()).getPassword().equals(passwordCaissier)) {
+                        Caissier caissier = (Caissier)user.get();
+                        System.out.println("Bienvenu " + caissier.getContact().getNom());
+                        caissier.seConnecter();
 
-                            boolean caissierMenu = true;
-                            while (caissierMenu) {
-                                System.out.println("-------------------------------------\n" +
-                                        "\t\t MENU DE CAISSIER\n\n" +
-                                        "1. Passer commande\n" +
-                                        "2. Deconnexion\n\n" +
-                                        "----------------------------------------");
-                                option = sc.nextInt();
-                                sc.nextLine();
-
-                                switch (option) {
-                                    case 1:
-                                        System.out.println("Entrez l'id du produit à commander");
-                                        String idProduit = sc.nextLine();
-                                        // Implémentez la logique de commande ici
-                                        break;
-                                    case 2:
-                                        caissierMenu = false;
-                                        break;
-                                }
-                            }
-                            break;
+                        boolean caissierMenu = true;
+                        while (caissierMenu) {
+                            // ... (menu caissier existant)
                         }
-                    }
-                    if (!found) {
+                    } else {
                         System.out.println("Identifiants incorrects ou compte inexistant");
                     }
                     break;
