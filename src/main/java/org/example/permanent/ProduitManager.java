@@ -1,29 +1,72 @@
 package org.example.permanent;
 
-import org.example.produit.*;
-import org.example.database.DatabaseManager;
+import org.example.DatabaseManager;
+import org.example.produit.Produit;
+import org.example.produit.Alimentaire;
+import org.example.produit.Cosmetique;
+import org.example.produit.Menager;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Scanner;
 
 public class ProduitManager {
     public void ajouterProduit(Produit produit) {
-        String sql = "INSERT INTO produits(id, type, nom, prix, quantite, details) VALUES(?,?,?,?,?,?)";
+        String sql = "INSERT INTO produits(idProduit, type, qte, marque, dateExpiration, prix, details) VALUES(?,?,?,?,?,?,?)";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, produit.getIdProduit());
-            pstmt.setString(2, getProductType(produit));
-            pstmt.setString(3, produit.getNomProduit());
-            pstmt.setDouble(4, produit.getPrix());
-            pstmt.setInt(5, produit.getQte());
-            pstmt.setString(6, getProductDetails(produit));
+            JSONObject details = new JSONObject();
+            String type = "";
 
-            pstmt.executeUpdate();
+            // Remplir les détails spécifiques selon le type de produit
+            if (produit instanceof Cosmetique) {
+                type = "cosmetique";
+                Cosmetique cosmetique = (Cosmetique) produit;
+                details.put("typeDePeau", new JSONArray(cosmetique.getTypeDePeau()));
+                details.put("allergene", new JSONArray(cosmetique.getAllergene()));
+                details.put("durreeConservation", cosmetique.getDurreeConservation());
+            } else if (produit instanceof Menager) {
+                type = "menager";
+                Menager menager = (Menager) produit;
+                details.put("emballage", menager.getEmballage());
+                details.put("efficacite", menager.getEfficacite());
+                details.put("securite", menager.getSecurite());
+            } else if (produit instanceof Alimentaire) {
+                type = "alimentaire";
+                Alimentaire alimentaire = (Alimentaire) produit;
+                details.put("valuerNutritionnelle", alimentaire.getValuerNutritionnelle());
+                details.put("ingredients", new JSONArray(alimentaire.getIngredients()));
+                details.put("certification", alimentaire.getCertification());
+            }
+
+            // Définir les paramètres de la requête
+            pstmt.setString(1, produit.getIdProduit());
+            pstmt.setString(2, type);
+            pstmt.setInt(3, produit.getQte());
+            pstmt.setString(4, produit.getMarque());
+            pstmt.setString(5, produit.getDateExpiration());
+            pstmt.setDouble(6, produit.getPrix());
+            pstmt.setString(7, details.toString());
+
+            // Exécuter la requête
+            int rowsAffected = pstmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("Produit ajouté avec succès !");
+            } else {
+                System.out.println("Aucun produit n'a été ajouté.");
+            }
+
         } catch (SQLException e) {
+            System.err.println("Erreur lors de l'ajout du produit dans la base de données:");
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Erreur inattendue:");
             e.printStackTrace();
         }
     }
@@ -37,109 +80,118 @@ public class ProduitManager {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                Produit produit = createProductFromResultSet(rs);
-                if (produit != null) {
-                    produits.add(produit);
+                String type = rs.getString("type");
+                JSONObject details = new JSONObject(rs.getString("details"));
+
+                switch (type) {
+                    case "cosmetique":
+                        produits.add(new Cosmetique(
+                                rs.getString("idProduit"),
+                                rs.getInt("qte"),
+                                rs.getString("marque"),
+                                rs.getString("dateExpiration"),
+                                jsonArrayToList(details.getJSONArray("typeDePeau")),
+                                jsonArrayToList(details.getJSONArray("allergene")),
+                                details.getString("durreeConservation"),
+                                rs.getDouble("prix")
+                        ));
+                        break;
+                    case "menager":
+                        produits.add(new Menager(
+                                rs.getString("idProduit"),
+                                rs.getInt("qte"),
+                                rs.getString("marque"),
+                                rs.getString("dateExpiration"),
+                                details.getString("emballage"),
+                                details.getString("efficacite"),
+                                details.getString("securite"),
+                                rs.getDouble("prix")
+                        ));
+                        break;
+                    case "alimentaire":
+                        produits.add(new Alimentaire(
+                                rs.getString("idProduit"),
+                                rs.getInt("qte"),
+                                rs.getString("marque"),
+                                rs.getString("dateExpiration"),
+                                details.getString("valuerNutritionnelle"),
+                                jsonArrayToList(details.getJSONArray("ingredients")),
+                                details.getString("certification"),
+                                rs.getDouble("prix")
+                        ));
+                        break;
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return produits;
     }
 
-    public boolean modifierProduit(int index, Produit nouveauProduit) {
-        List<Produit> produits = chargerProduits();
-        if (index < 0 || index >= produits.size()) {
-            return false;
+    private List<String> jsonArrayToList(JSONArray jsonArray) {
+        List<String> list = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            list.add(jsonArray.getString(i));
         }
+        return list;
+    }
 
-        String id = produits.get(index).getIdProduit();
-        String sql = "UPDATE produits SET type=?, nom=?, prix=?, quantite=?, details=? WHERE id=?";
+    public void supprimerProduit() {
+        List<Produit> produits = chargerProduits();
+        Scanner sc = new Scanner(System.in);
+        int index = sc.nextInt();
+
+        if (index >= 0 && index < produits.size()) {
+            String sql = "DELETE FROM produits WHERE idProduit = ?";
+
+            try (Connection conn = DatabaseManager.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+                pstmt.setString(1, produits.get(index).getIdProduit());
+                pstmt.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void modifierProduit(Produit produit) {
+        String sql = "UPDATE produits SET qte = ?, marque = ?, dateExpiration = ?, prix = ?, details = ? WHERE idProduit = ?";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, getProductType(nouveauProduit));
-            pstmt.setString(2, nouveauProduit.getNomProduit());
-            pstmt.setDouble(3, nouveauProduit.getPrix());
-            pstmt.setInt(4, nouveauProduit.getQte());
-            pstmt.setString(5, getProductDetails(nouveauProduit));
-            pstmt.setString(6, id);
+            JSONObject details = new JSONObject();
+            String type = "";
 
-            return pstmt.executeUpdate() > 0;
+            if (produit instanceof Cosmetique) {
+                Cosmetique cosmetique = (Cosmetique) produit;
+                details.put("typeDePeau", new JSONArray(cosmetique.getTypeDePeau()));
+                details.put("allergene", new JSONArray(cosmetique.getAllergene()));
+                details.put("durreeConservation", cosmetique.getDurreeConservation());
+            } else if (produit instanceof Menager) {
+                Menager menager = (Menager) produit;
+                details.put("emballage", menager.getEmballage());
+                details.put("efficacite", menager.getEfficacite());
+                details.put("securite", menager.getSecurite());
+            } else if (produit instanceof Alimentaire) {
+                Alimentaire alimentaire = (Alimentaire) produit;
+                details.put("valuerNutritionnelle", alimentaire.getValuerNutritionnelle());
+                details.put("ingredients", new JSONArray(alimentaire.getIngredients()));
+                details.put("certification", alimentaire.getCertification());
+            }
+
+            pstmt.setInt(1, produit.getQte());
+            pstmt.setString(2, produit.getMarque());
+            pstmt.setString(3, produit.getDateExpiration());
+            pstmt.setDouble(4, produit.getPrix());
+            pstmt.setString(5, details.toString());
+            pstmt.setString(6, produit.getIdProduit());
+
+            pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean supprimerProduit(int index) {
-        List<Produit> produits = chargerProduits();
-        if (index < 0 || index >= produits.size()) {
-            return false;
-        }
-
-        String sql = "DELETE FROM produits WHERE id = ?";
-
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, produits.get(index).getIdProduit());
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // Méthodes utilitaires
-    private String getProductType(Produit produit) {
-        if (produit instanceof Alimentaire) return "alimentaire";
-        if (produit instanceof Cosmetique) return "cosmetique";
-        if (produit instanceof Menager) return "menager";
-        return "autre";
-    }
-
-    private String getProductDetails(Produit produit) {
-        // Implémentez la sérialisation des détails spécifiques
-        // Par exemple avec Gson si nécessaire
-        return ""; // À adapter
-    }
-
-    private Produit createProductFromResultSet(ResultSet rs) throws SQLException {
-        String type = rs.getString("type");
-        String details = rs.getString("details");
-
-        // Implémentez la désérialisation selon le type
-        // À adapter selon votre structure
-        switch (type) {
-            case "alimentaire":
-                return new Alimentaire(
-                        rs.getString("id"),
-                        rs.getString("nom"),
-                        rs.getDouble("prix"),
-                        rs.getInt("quantite")
-                        // D'autres paramètres
-                );
-            case "cosmetique":
-                return new Cosmetique(
-                        rs.getString("id"),
-                        rs.getString("nom"),
-                        rs.getDouble("prix"),
-                        rs.getInt("quantite")
-                        // D'autres paramètres
-                );
-            case "menager":
-                return new Menager(
-                        rs.getString("id"),
-                        rs.getString("nom"),
-                        rs.getDouble("prix"),
-                        rs.getInt("quantite")
-                        // D'autres paramètres
-                );
-            default:
-                return null;
         }
     }
 }

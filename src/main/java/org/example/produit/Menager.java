@@ -5,8 +5,9 @@ public class Menager extends Produit{
     private String Efficacite;
     private String Securite;
 
-    public Menager(String idProduit, int qte, String marque, String dateExpiration, String emballage, String efficacite, String securite) {
-        super(idProduit, qte, marque, dateExpiration);
+    public Menager(String idProduit, int qte, String marque, String dateExpiration,
+                   String emballage, String efficacite, String securite, double prix) {
+        super(idProduit, qte, marque, dateExpiration, prix);
         Emballage = emballage;
         Efficacite = efficacite;
         Securite = securite;

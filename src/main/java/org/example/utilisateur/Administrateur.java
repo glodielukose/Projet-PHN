@@ -56,13 +56,13 @@ public class Administrateur extends Utilisateur {
         List<String> typeDePeau = new ArrayList<>();
         String peau;
         List<String> allergene = new ArrayList<>();
-//        String dureeDeConservation;
         String allergie;
         int qte;
         String marque;
         String idProduit;
         String dateExpiration;
         String durreeConservation;
+        double prix; // Ajout de la variable prix
 
         System.out.print("Entrez l'id du produit : ");
         idProduit = sc.nextLine();
@@ -80,12 +80,15 @@ public class Administrateur extends Utilisateur {
         System.out.print("Entrez la durree de conservation : ");
         durreeConservation = sc.nextLine();
 
+        System.out.print("Entrez le prix : "); // Nouvelle ligne pour le prix
+        prix = sc.nextDouble();
+        sc.nextLine();
+
         System.out.println("Entrez les types de peau");
         for (int i = 1; i < 4; i++) {
             System.out.print("peau" + i + " : ");
             peau = sc.nextLine();
             typeDePeau.add(peau);
-
         }
 
         System.out.println("Entrez les allergies");
@@ -93,11 +96,9 @@ public class Administrateur extends Utilisateur {
             System.out.print("Allergie " + i + " : ");
             allergie = sc.nextLine();
             allergene.add(allergie);
-
         }
 
-
-        return new Cosmetique(idProduit, qte, marque, dateExpiration, typeDePeau, allergene, durreeConservation);
+        return new Cosmetique(idProduit, qte, marque, dateExpiration, typeDePeau, allergene, durreeConservation, prix);
     }
 
     public Alimentaire ajouterAlimentaire() {
@@ -110,7 +111,7 @@ public class Administrateur extends Utilisateur {
         String marque;
         String idProduit;
         String dateExpiration;
-
+        double prix; // Ajout de la variable prix
 
         System.out.println("Entrez l'id du produit");
         idProduit = sc.nextLine();
@@ -125,10 +126,14 @@ public class Administrateur extends Utilisateur {
         System.out.println("Entrez la date d'expiration");
         dateExpiration = sc.nextLine();
 
+        System.out.println("Entrez le prix"); // Nouvelle ligne pour le prix
+        prix = sc.nextDouble();
+        sc.nextLine();
+
         System.out.println("Entrez la certification");
         certification = sc.nextLine();
 
-        System.out.println("Entrez la valeur nutritionnele");
+        System.out.println("Entrez la valeur nutritionnelle");
         valuerNutritionnelle = sc.nextLine();
 
         System.out.println("Entrez les ingredients");
@@ -136,11 +141,10 @@ public class Administrateur extends Utilisateur {
             System.out.print("ingredient" + i + " : ");
             ingredient = sc.nextLine();
             ingredients.add(ingredient);
-
         }
 
-
-        return new Alimentaire(idProduit, qte, marque, dateExpiration, valuerNutritionnelle, ingredients, certification);
+        return new Alimentaire(idProduit, qte, marque, dateExpiration,
+                valuerNutritionnelle, ingredients, certification, prix);
     }
 
     public Menager ajouterMenager() {
@@ -152,7 +156,7 @@ public class Administrateur extends Utilisateur {
         String marque;
         String idProduit;
         String dateExpiration;
-
+        double prix; // Ajout de la variable prix
 
         System.out.println("Entrez l'id du produit");
         idProduit = sc.nextLine();
@@ -167,6 +171,10 @@ public class Administrateur extends Utilisateur {
         System.out.println("Entrez la date d'expiration");
         dateExpiration = sc.nextLine();
 
+        System.out.println("Entrez le prix"); // Nouvelle ligne pour le prix
+        prix = sc.nextDouble();
+        sc.nextLine();
+
         System.out.println("Entrez l'emballage");
         emballage = sc.nextLine();
 
@@ -176,12 +184,8 @@ public class Administrateur extends Utilisateur {
         System.out.println("Entrez la securite");
         securite = sc.nextLine();
 
-
-
-
-//        String , String , String
-
-        return new Menager(idProduit, qte, marque, dateExpiration, emballage, efficacite, securite);
+        return new Menager(idProduit, qte, marque, dateExpiration,
+                emballage, efficacite, securite, prix);
     }
 }
 

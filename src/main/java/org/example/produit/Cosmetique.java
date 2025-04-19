@@ -8,8 +8,10 @@ public class Cosmetique extends Produit {
     private List<String> Allergene = new ArrayList<>();
     private String DurreeConservation;
 
-    public Cosmetique(String idProduit, int qte, String marque, String dateExpiration, List<String> typeDePeau, List<String> allergene, String durreeConservation) {
-        super(idProduit, qte, marque, dateExpiration);
+    public Cosmetique(String idProduit, int qte, String marque, String dateExpiration,
+                      List<String> typeDePeau, List<String> allergene,
+                      String durreeConservation, double prix) {
+        super(idProduit, qte, marque, dateExpiration, prix);
         TypeDePeau = typeDePeau;
         Allergene = allergene;
         DurreeConservation = durreeConservation;

@@ -7,8 +7,10 @@ public class Alimentaire extends Produit {
     private List<String> Ingredients;
     private String Certification;
 
-    public Alimentaire(String idProduit, int qte, String marque, String dateExpiration, String valuerNutritionnelle, List<String> ingredients, String certification) {
-        super(idProduit, qte, marque, dateExpiration);
+    public Alimentaire(String idProduit, int qte, String marque, String dateExpiration,
+                       String valuerNutritionnelle, List<String> ingredients,
+                       String certification, double prix) {
+        super(idProduit, qte, marque, dateExpiration, prix);
         ValuerNutritionnelle = valuerNutritionnelle;
         Ingredients = ingredients;
         Certification = certification;

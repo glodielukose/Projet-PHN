@@ -5,12 +5,14 @@ public class Produit {
     protected int Qte;
     protected String marque;
     protected String dateExpiration;
+    protected  double prix;
 
-    public Produit(String idProduit, int qte, String marque, String dateExpiration) {
+    public Produit(String idProduit, int qte, String marque, String dateExpiration, double prix) {
         this.idProduit = idProduit;
-        Qte = qte;
+        this.Qte = qte;
         this.marque = marque;
         this.dateExpiration = dateExpiration;
+        this.prix = prix;
     }
 
     public String getIdProduit() {
@@ -19,6 +21,14 @@ public class Produit {
 
     public void setIdProduit(String idProduit) {
         this.idProduit = idProduit;
+    }
+
+    public double getPrix() {
+        return prix;
+    }
+
+    public void setPrix(double prix) {
+        this.prix = prix;
     }
 
     public int getQte() {

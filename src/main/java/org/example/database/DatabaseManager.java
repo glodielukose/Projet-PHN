@@ -1,45 +1,70 @@
-package org.example.database;
+package org.example;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class DatabaseManager {
     private static final String DB_URL = "jdbc:sqlite:supermarket.db";
-
-    public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(DB_URL);
-    }
+    private static Connection connection;
 
     public static void initializeDatabase() {
-        try (Connection conn = getConnection()) {
-            // Création de la table utilisateurs
-            conn.createStatement().execute(
-                    "CREATE TABLE IF NOT EXISTS utilisateurs (" +
-                            "id TEXT PRIMARY KEY," +
-                            "type TEXT NOT NULL," +
-                            "nom TEXT NOT NULL," +
-                            "username TEXT NOT NULL," +
-                            "numTel TEXT NOT NULL," +
-                            "genre TEXT NOT NULL," +
-                            "password TEXT NOT NULL," +
-                            "email TEXT," +
-                            "autres_details TEXT" +
-                            ")"
-            );
-
-            // Création de la table produits
-            conn.createStatement().execute(
-                    "CREATE TABLE IF NOT EXISTS produits (" +
-                            "id TEXT PRIMARY KEY," +
-                            "type TEXT NOT NULL," +
-                            "nom TEXT NOT NULL," +
-                            "prix REAL NOT NULL," +
-                            "quantite INTEGER NOT NULL," +
-                            "details TEXT" +
-                            ")"
-            );
+        try {
+            // Fermer la connexion existante si elle est ouverte
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+            // Ouvrir une nouvelle connexion
+            connection = DriverManager.getConnection(DB_URL);
+            connection.setAutoCommit(true); // Activer l'auto-commit
+            createTables();
         } catch (SQLException e) {
+            System.err.println("Erreur lors de l'initialisation de la base de données:");
+            e.printStackTrace();
+        }
+    }
+
+    public static Connection getConnection() throws SQLException {
+        // Si la connexion est fermée ou nulle, la rouvrir
+        if (connection == null || connection.isClosed()) {
+            initializeDatabase();
+        }
+        return connection;
+    }
+
+    private static void createTables() throws SQLException {
+        String createUsersTable = "CREATE TABLE IF NOT EXISTS utilisateurs (" +
+                "id TEXT PRIMARY KEY, " +
+                "nom TEXT, " +
+                "username TEXT, " +
+                "numTel TEXT, " +
+                "genre TEXT, " +
+                "password TEXT, " +
+                "role TEXT)";
+
+        String createProductsTable = "CREATE TABLE IF NOT EXISTS produits (" +
+                "idProduit TEXT PRIMARY KEY, " +
+                "type TEXT, " +
+                "qte INTEGER, " +
+                "marque TEXT, " +
+                "dateExpiration TEXT, " +
+                "prix REAL, " +
+                "details TEXT)";
+
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(createUsersTable);
+            stmt.execute(createProductsTable);
+        }
+    }
+
+    public static void closeConnection() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la fermeture de la connexion:");
             e.printStackTrace();
         }
     }
