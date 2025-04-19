@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Administrateur extends Utilisateur {
-    public Administrateur(String nom, String numTel, String id, String genre, String password) {
-        super(new Contact(nom, numTel, id, genre), password);
+    public Administrateur(String nom, String username, String numTel, String id, String genre, String password) {
+        super(new Contact(nom, numTel, genre), password, id, username);
 
 
     }
@@ -43,7 +43,12 @@ public class Administrateur extends Utilisateur {
         System.out.print("Entrez le nom : ");
         nom = sc.nextLine();
 
-        return new Caissier(nom, numTel, id, genre, password);
+        System.out.print("Entrez le nom d'utilisateur : ");
+        String username = sc.nextLine();
+
+        System.out.println("Le caissier a ete ajoute avec succes");
+
+        return new Caissier(nom, numTel, genre, password, id, username);
     }
 
     public Cosmetique ajouterCosmetique() {

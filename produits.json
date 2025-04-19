@@ -1,0 +1,44 @@
+[
+  {
+    "type": "cosmetique",
+    "TypeDePeau": [
+      "2",
+      "2",
+      "2"
+    ],
+    "Allergene": [
+      "22",
+      "2",
+      "2"
+    ],
+    "DurreeConservation": "222",
+    "idProduit": "1",
+    "Qte": 2,
+    "marque": "22",
+    "dateExpiration": "22"
+  },
+  {
+    "type": "menager",
+    "Emballage": "3",
+    "Efficacite": "3",
+    "Securite": "3",
+    "idProduit": "33",
+    "Qte": 3,
+    "marque": "3",
+    "dateExpiration": "3"
+  },
+  {
+    "type": "alimentaire",
+    "ValuerNutritionnelle": "4",
+    "Ingredients": [
+      "4",
+      "4",
+      "4"
+    ],
+    "Certification": "4",
+    "idProduit": "3",
+    "Qte": 3,
+    "marque": "34",
+    "dateExpiration": "4"
+  }
+]

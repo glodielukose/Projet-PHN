@@ -3,15 +3,13 @@ package org.example.utilisateur;
 public class Contact {
     private String Nom ;
     private String NumTel ;
-    private String Id ;
     private String Genre ;
 
     public Contact(){}
 
-    public Contact(String nom, String numTel, String id, String genre) {
+    public Contact(String nom, String numTel, String genre) {
         Nom = nom;
         NumTel = numTel;
-        Id = id;
         Genre = genre;
     }
 
@@ -31,14 +29,6 @@ public class Contact {
         NumTel = numTel;
     }
 
-    public String getId() {
-        return Id;
-    }
-
-    public void setId(String id) {
-        Id = id;
-    }
-
     public String getGenre() {
         return Genre;
     }
@@ -52,7 +42,6 @@ public class Contact {
         return "Contact{" +
                 "Nom='" + Nom + '\'' +
                 ", NumTel='" + NumTel + '\'' +
-                ", Id='" + Id + '\'' +
                 ", Genre='" + Genre + '\'' +
                 '}';
     }

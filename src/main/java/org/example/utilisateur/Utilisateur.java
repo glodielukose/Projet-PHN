@@ -5,11 +5,32 @@ import java.util.Scanner;
 public class Utilisateur {
     private Contact contact;
     private String password ;
+    protected String id;
+    protected String username ;
 
 
-    public Utilisateur(Contact contact, String password) {
+    public Utilisateur(Contact contact, String password, String id, String username) {
         this.contact = contact;
         this.password = password;
+        this.id = id;
+        this.username = username;
+    }
+
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getPassword() {
